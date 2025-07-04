@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QR Code Generator</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.d.ts"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="js/qrcode-styling.js"></script>
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
@@ -21,12 +21,12 @@
                 </div>
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700">Background Color</label>
-                    <input type="color" id="bg-color" class="mt-1">
+                    <input type="color" id="bg-color" class="mt-1 rounded-full">
                     <input type="text" id="bg-color-hex" class="mt-1 p-2 w-full border rounded" value="#ffffff">
                 </div>
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700">Pattern Color</label>
-                    <input type="color" id="pattern-color" class="mt-1">
+                    <input type="color" id="pattern-color" class="mt-1 rounded-full">
                     <input type="text" id="pattern-color-hex" class="mt-1 p-2 w-full border rounded" value="#000000">
                 </div>
                 <div class="mb-4">
@@ -41,7 +41,7 @@
                     <label class="block text-sm font-medium text-gray-700">Corner Frame Type</label>
                     <select id="corner-frame" class="mt-1 p-2 w-full border rounded">
                         <option value="square">Square</option>
-                        <option value="circle">Circle</option>
+                        <option value="extra-rounded">Circle</option>
                     </select>
                 </div>
                 <div class="mb-4">
