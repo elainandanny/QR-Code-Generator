@@ -56,7 +56,7 @@ function getLuminance(hex) {
     return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
 
-function generateQRCode() {
+async function generateQRCode() {
     const url = document.getElementById('url').value;
     const bgColor = document.getElementById('bg-color').value;
     const patternColor = document.getElementById('pattern-color').value;
@@ -71,41 +71,36 @@ function generateQRCode() {
         return;
     }
 
-    document.getElementById('qr-code').innerHTML = '';
-    const qrCode = new QRCode(document.getElementById('qr-code'), {
-        text: url,
-        width: 200,
-        height: 200,
-        colorDark: patternColor,
-        colorLight: bgColor,
-        correctLevel: QRCode.CorrectLevel.H
+    // Configure QR code with qrcode-styling
+    const qrCode = new QRCodeStyling({
+        width: 600, // High resolution for 300 DPI (2 inches)
+        height: 600,
+        data: url,
+        dotsOptions: {
+            color: patternColor,
+            type: patternType // square, dots, rounded
+        },
+        backgroundOptions: {
+            color: bgColor
+        },
+        cornersSquareOptions: {
+            type: cornerFrame // square, extra-rounded
+        },
+        cornersDotOptions: {
+            type: cornerDot // square, dot
+        },
+        image: logo ? URL.createObjectURL(logo) : undefined,
+        imageOptions: {
+            crossOrigin: "anonymous",
+            margin: 10,
+            imageSize: 0.4
+        }
     });
 
-    // Apply pattern and corner styles (simplified for QRCode.js compatibility)
-    // Note: QRCode.js has limited support for patterns and corners, so we simulate with CSS or canvas
-    const canvas = document.getElementById('qr-code').querySelector('canvas');
-    if (patternType === 'dots') {
-        canvas.style.borderRadius = '10%';
-    } else if (patternType === 'rounded') {
-        canvas.style.borderRadius = '20%';
-    }
-
-    // Add logo if provided
-    if (logo) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const img = new Image();
-            img.src = e.target.result;
-            img.onload = function() {
-                const ctx = canvas.getContext('2d');
-                const logoSize = 40;
-                const x = (canvas.width - logoSize) / 2;
-                const y = (canvas.height - logoSize) / 2;
-                ctx.drawImage(img, x, y, logoSize, logoSize);
-            };
-        };
-        reader.readAsDataURL(logo);
-    }
+    // Clear previous QR code
+    document.getElementById('qr-code').innerHTML = '';
+    // Append QR code
+    await qrCode.append(document.getElementById('qr-code'));
 
     // Add bottom text
     const qrText = document.getElementById('qr-text');
@@ -129,16 +124,41 @@ document.getElementById('export-svg').addEventListener('click', function() {
 });
 
 function exportQRCode(format) {
-    const qrCard = document.getElementById('qr-card');
-    html2canvas(qrCard).then(canvas => {
-        let link = document.createElement('a');
-        link.download = `qrcode.${format}`;
-        if (format === 'svg') {
-            // SVG export requires additional handling (not natively supported by html2canvas)
-            alert('SVG export is not fully supported in this demo.');
-        } else {
-            link.href = canvas.toDataURL(`image/${format}`);
+    const qrCard = document.getElementById('qr-code');
+    if (format === 'svg') {
+        const qrCode = new QRCodeStyling({
+            width: 600,
+            height: 600,
+            data: document.getElementById('url').value,
+            dotsOptions: {
+                color: document.getElementById('pattern-color').value,
+                type: document.getElementById('pattern-type').value
+            },
+            backgroundOptions: {
+                color: document.getElementById('bg-color').value
+            },
+            cornersSquareOptions: {
+                type: document.getElementById('corner-frame').value
+            },
+            cornersDotOptions: {
+                type: document.getElementById('corner-dot').value
+            },
+            image: document.getElementById('logo').files[0] ? URL.createObjectURL(document.getElementById('logo').files[0]) : undefined
+        });
+        qrCode.download({ name: "qrcode", extension: "svg" });
+    } else {
+        html2canvas(qrCard, {
+            scale: 2, // Increase scale for 300 DPI
+            useCORS: true,
+            backgroundColor: null
+        }).then(canvas => {
+            const link = document.createElement('a');
+            link.download = `qrcode.${format}`;
+            link.href = canvas.toDataURL(`image/${format}`, 1.0); // High quality
             link.click();
-        }
-    });
+        }).catch(err => {
+            console.error('Export failed:', err);
+            alert('Export failed. Please try again.');
+        });
+    }
 }
