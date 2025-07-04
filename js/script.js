@@ -1,13 +1,22 @@
+// Ensure QRCodeStyling is loaded
+if (!window.QRCodeStyling) {
+    console.error('QRCodeStyling library not loaded. Please ensure qrcode-styling.js is included.');
+    alert('QR code library failed to load. Please check the console and ensure qrcode-styling.js is included.');
+}
+
+// Form submission
 document.getElementById('qr-form').addEventListener('submit', function(e) {
     e.preventDefault();
     generateQRCode();
 });
 
+// Edit button
 document.getElementById('edit-btn').addEventListener('click', function() {
     document.getElementById('qr-card').classList.add('hidden');
     document.getElementById('form-section').classList.remove('hidden');
 });
 
+// Color picker sync
 document.getElementById('bg-color').addEventListener('input', function() {
     document.getElementById('bg-color-hex').value = this.value;
     checkContrast();
@@ -28,6 +37,7 @@ document.getElementById('pattern-color-hex').addEventListener('input', function(
     checkContrast();
 });
 
+// Contrast checker
 function checkContrast() {
     const bgColor = document.getElementById('bg-color').value;
     const patternColor = document.getElementById('pattern-color').value;
@@ -56,6 +66,7 @@ function getLuminance(hex) {
     return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
 
+// QR code generation
 async function generateQRCode() {
     const url = document.getElementById('url').value;
     const bgColor = document.getElementById('bg-color').value;
@@ -71,46 +82,52 @@ async function generateQRCode() {
         return;
     }
 
-    // Configure QR code with qrcode-styling
-    const qrCode = new QRCodeStyling({
-        width: 600, // High resolution for 300 DPI (2 inches)
-        height: 600,
-        data: url,
-        dotsOptions: {
-            color: patternColor,
-            type: patternType // square, dots, rounded
-        },
-        backgroundOptions: {
-            color: bgColor
-        },
-        cornersSquareOptions: {
-            type: cornerFrame // square, extra-rounded
-        },
-        cornersDotOptions: {
-            type: cornerDot // square, dot
-        },
-        image: logo ? URL.createObjectURL(logo) : undefined,
-        imageOptions: {
-            crossOrigin: "anonymous",
-            margin: 10,
-            imageSize: 0.4
-        }
-    });
+    try {
+        // Configure QR code with qrcode-styling
+        const qrCode = new QRCodeStyling({
+            width: 4280, // Updated for large prints (300 DPI, ~14.27 inches)
+            height: 4280,
+            data: url,
+            dotsOptions: {
+                color: patternColor,
+                type: patternType // square, dots, rounded
+            },
+            backgroundOptions: {
+                color: bgColor
+            },
+            cornersSquareOptions: {
+                type: cornerFrame // square, extra-rounded
+            },
+            cornersDotOptions: {
+                type: cornerDot // square, dot
+            },
+            image: logo ? URL.createObjectURL(logo) : undefined,
+            imageOptions: {
+                crossOrigin: "anonymous",
+                margin: 20, // Increased margin for larger size
+                imageSize: 0.4
+            }
+        });
 
-    // Clear previous QR code
-    document.getElementById('qr-code').innerHTML = '';
-    // Append QR code
-    await qrCode.append(document.getElementById('qr-code'));
+        // Clear previous QR code
+        document.getElementById('qr-code').innerHTML = '';
+        // Append QR code
+        await qrCode.append(document.getElementById('qr-code'));
 
-    // Add bottom text
-    const qrText = document.getElementById('qr-text');
-    qrText.textContent = bottomText;
+        // Add bottom text
+        const qrText = document.getElementById('qr-text');
+        qrText.textContent = bottomText;
 
-    // Show QR card
-    document.getElementById('form-section').classList.add('hidden');
-    document.getElementById('qr-card').classList.remove('hidden');
+        // Show QR card
+        document.getElementById('form-section').classList.add('hidden');
+        document.getElementById('qr-card').classList.remove('hidden');
+    } catch (error) {
+        console.error('QR code generation failed:', error);
+        alert('Failed to generate QR code. Please check the console for details.');
+    }
 }
 
+// Export buttons
 document.getElementById('export-jpeg').addEventListener('click', function() {
     exportQRCode('jpeg');
 });
@@ -123,42 +140,53 @@ document.getElementById('export-svg').addEventListener('click', function() {
     exportQRCode('svg');
 });
 
-function exportQRCode(format) {
+async function exportQRCode(format) {
     const qrCard = document.getElementById('qr-code');
     if (format === 'svg') {
-        const qrCode = new QRCodeStyling({
-            width: 600,
-            height: 600,
-            data: document.getElementById('url').value,
-            dotsOptions: {
-                color: document.getElementById('pattern-color').value,
-                type: document.getElementById('pattern-type').value
-            },
-            backgroundOptions: {
-                color: document.getElementById('bg-color').value
-            },
-            cornersSquareOptions: {
-                type: document.getElementById('corner-frame').value
-            },
-            cornersDotOptions: {
-                type: document.getElementById('corner-dot').value
-            },
-            image: document.getElementById('logo').files[0] ? URL.createObjectURL(document.getElementById('logo').files[0]) : undefined
-        });
-        qrCode.download({ name: "qrcode", extension: "svg" });
+        try {
+            const qrCode = new QRCodeStyling({
+                width: 4280,
+                height: 4280,
+                data: document.getElementById('url').value,
+                dotsOptions: {
+                    color: document.getElementById('pattern-color').value,
+                    type: document.getElementById('pattern-type').value
+                },
+                backgroundOptions: {
+                    color: document.getElementById('bg-color').value
+                },
+                cornersSquareOptions: {
+                    type: document.getElementById('corner-frame').value
+                },
+                cornersDotOptions: {
+                    type: document.getElementById('corner-dot').value
+                },
+                image: document.getElementById('logo').files[0] ? URL.createObjectURL(document.getElementById('logo').files[0]) : undefined,
+                imageOptions: {
+                    crossOrigin: "anonymous",
+                    margin: 20,
+                    imageSize: 0.4
+                }
+            });
+            await qrCode.download({ name: "qrcode", extension: "svg" });
+        } catch (error) {
+            console.error('SVG export failed:', error);
+            alert('SVG export failed. Please check the console.');
+        }
     } else {
-        html2canvas(qrCard, {
-            scale: 2, // Increase scale for 300 DPI
-            useCORS: true,
-            backgroundColor: null
-        }).then(canvas => {
+        try {
+            const canvas = await html2canvas(qrCard, {
+                scale: 1, // 4280px is already high-res
+                useCORS: true,
+                backgroundColor: null
+            });
             const link = document.createElement('a');
             link.download = `qrcode.${format}`;
-            link.href = canvas.toDataURL(`image/${format}`, 1.0); // High quality
+            link.href = canvas.toDataURL(`image/${format}`, 1.0);
             link.click();
-        }).catch(err => {
-            console.error('Export failed:', err);
+        } catch (error) {
+            console.error('Export failed:', error);
             alert('Export failed. Please try again.');
-        });
+        }
     }
 }
