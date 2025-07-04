@@ -4,13 +4,13 @@ A modern, customizable QR code generator website built with HTML, CSS, and JavaS
 
 ## Features
 - Generate QR codes from website links.
-- Customize background and pattern colors using hex codes or color picker.
+- Customize background and pattern colors using hex codes or circular color picker.
 - Select patterns: Square Boxes, Dots, Rounded Boxes.
-- Choose corner frame and dot types.
+- Choose corner frame (Square, Circle) and dot types (Square, Dot).
 - Upload a logo to display in the center.
 - Add optional text below the QR code.
 - Check for sufficient color contrast.
-- Export QR code as JPEG, PNG, or SVG.
+- Export QR code as JPEG, PNG, or SVG at 300 DPI for printing.
 - Mobile-friendly design with save-to-photos functionality.
 
 ## Setup
