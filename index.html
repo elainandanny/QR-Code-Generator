@@ -9,8 +9,9 @@
   <style>
     #qr-card { display: none; }
     #form-card { display: block; }
-    #qr-canvas { width: 100%; max-width: 300px; height: auto; }
+    #qr-canvas { width: 100%; max-width: 48px; height: auto; }
     .color-picker-label { display: inline-block; width: 120px; }
+    #form-card, #qr-card { max-width: 600px; margin-left: auto; margin-right: auto; }
   </style>
 </head>
 <body class="bg-gray-100 min-h-screen flex items-center justify-center">
@@ -22,7 +23,7 @@
       <form id="qr-form" class="space-y-4">
         <div>
           <label class="block text-sm font-medium text-gray-700">Website URL</label>
-          <input type="text" id="url" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" placeholder="google.com" required>
+          <input type="text" id="url" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" placeholder="" required>
         </div>
         <div class="flex space-x-4">
           <div>
@@ -131,8 +132,35 @@
       // Clear previous QR code
       qrCanvas.innerHTML = '';
 
-      // Configure QR code
-      const options = {
+      // Configure QR code for preview
+      const previewOptions = {
+        width: 300,
+        height: 300,
+        type: 'canvas',
+        data: url,
+        dotsOptions: {
+          color: patternColor,
+          type: patternType
+        },
+        backgroundOptions: {
+          color: bgColor
+        },
+        cornersSquareOptions: {
+          type: cornerFrameType
+        },
+        cornersDotOptions: {
+          type: cornerDotType
+        },
+        imageOptions: {
+          crossOrigin: 'anonymous',
+          margin: 6,
+          imageSize: 0.4,
+          hideBackgroundDots: false
+        }
+      };
+
+      // Configure QR code for export
+      const exportOptions = {
         width: 4000,
         height: 4000,
         type: 'canvas',
@@ -159,21 +187,32 @@
       };
 
       if (logo) {
-        options.image = URL.createObjectURL(logo);
+        const logoUrl = URL.createObjectURL(logo);
+        previewOptions.image = logoUrl;
+        exportOptions.image = logoUrl;
       }
 
-      // Generate QR code
-      qrCode = new QRCodeStyling(options);
+      // Generate QR code for preview
+      qrCode = new QRCodeStyling(previewOptions);
       qrCode.append(qrCanvas);
 
       // Show QR code card and hide form card
       formCard.style.display = 'none';
       qrCard.style.display = 'block';
 
-      // Handle downloads
-      document.getElementById('download-jpg').onclick = () => qrCode.download({ name: 'qrcode', extension: 'jpg' });
-      document.getElementById('download-png').onclick = () => qrCode.download({ name: 'qrcode', extension: 'png' });
-      document.getElementById('download-svg').onclick = () => qrCode.download({ name: 'qrcode', extension: 'svg' });
+      // Handle downloads with full resolution
+      document.getElementById('download-jpg').onclick = () => {
+        const exportQrCode = new QRCodeStyling(exportOptions);
+        exportQrCode.download({ name: 'qrcode', extension: 'jpg' });
+      };
+      document.getElementById('download-png').onclick = () => {
+        const exportQrCode = new QRCodeStyling(exportOptions);
+        exportQrCode.download({ name: 'qrcode', extension: 'png' });
+      };
+      document.getElementById('download-svg').onclick = () => {
+        const exportQrCode = new QRCodeStyling(exportOptions);
+        exportQrCode.download({ name: 'qrcode', extension: 'svg' });
+      };
     });
   </script>
 </body>
