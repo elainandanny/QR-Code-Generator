@@ -98,10 +98,10 @@ async function generateQRCode() {
     }
 
     try {
-        // Configure QR code for display (smaller size for performance)
+        // Configure QR code for display (larger size for better rendering)
         qrCodeInstance = new QRCodeStyling({
-            width: 300, // Display size
-            height: 300,
+            width: 600, // Increased display size for sharper rendering
+            height: 600,
             data: url,
             dotsOptions: {
                 color: patternColor,
@@ -119,7 +119,7 @@ async function generateQRCode() {
             image: logo ? URL.createObjectURL(logo) : undefined,
             imageOptions: {
                 crossOrigin: "anonymous",
-                margin: 10,
+                margin: 20, // Scaled for larger display: 10 * (600/300)
                 imageSize: 0.4
             }
         });
@@ -135,7 +135,7 @@ async function generateQRCode() {
         // Show QR card
         document.getElementById('form-section').classList.add('hidden');
         document.getElementById('qr-card').classList.remove('hidden');
-    } catch (error) {
+    }integrate catch (error) {
         console.error('QR code generation failed:', error);
         alert('Failed to generate QR code. Please check the console for details.');
     }
@@ -183,7 +183,7 @@ async function exportQRCode(format) {
                 image: document.getElementById('logo').files[0] ? URL.createObjectURL(document.getElementById('logo').files[0]) : undefined,
                 imageOptions: {
                     crossOrigin: "anonymous",
-                    margin: 140, // Scaled proportionally: 10 * (4200/300)
+                    margin: 140, // Scaled proportionally: 20 * (4200/600)
                     imageSize: 0.4
                 }
             });
@@ -194,10 +194,16 @@ async function exportQRCode(format) {
             // DPI metadata may show 96 DPI in some viewers; use an image editor to set to 300 DPI without resampling.
             const qrCard = document.getElementById('qr-code');
             const canvas = await html2canvas(qrCard, {
-                scale: 14, // 4200/300 = 14x scaling for 300 DPI at 14 inches
+                scale: 7, // 4200/600 = 7x scaling for 300 DPI at 14 inches
                 useCORS: true,
-                backgroundColor: null
+                backgroundColor: null,
+                width: 600, // Ensure square capture
+                height: 600
             });
+            // Verify canvas dimensions
+            if (canvas.width !== 4200 || canvas.height !== 4200) {
+                console.warn(`Canvas dimensions are ${canvas.width}x${canvas.height}, expected 4200x4200`);
+            }
             const link = document.createElement('a');
             link.download = `qrcode.${format}`;
             link.href = canvas.toDataURL(`image/${format}`, 1.0);
