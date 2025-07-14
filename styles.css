@@ -8,12 +8,17 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    width: 600px; /* Match display size in script.js */
+    height: 600px;
     max-width: 100%;
+    aspect-ratio: 1/1; /* Ensure square aspect ratio */
 }
 
 #qr-code canvas {
+    width: 600px;
+    height: 600px;
     max-width: 100%;
-    height: auto;
+    max-height: 100%;
 }
 
 input[type="color"] {
