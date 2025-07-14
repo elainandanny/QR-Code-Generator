@@ -162,9 +162,9 @@ async function exportQRCode(format) {
 
     try {
         if (format === 'svg') {
-            // Reconfigure QR code for high-resolution export (600 DPI, minimum 4200x4200)
+            // Reconfigure QR code for high-resolution export (300 DPI, 4200x4200 pixels, 14 inches)
             const highResQRCode = new QRCodeStyling({
-                width: 4200, // 7 inches * 600 DPI
+                width: 4200, // 14 inches * 300 DPI
                 height: 4200,
                 data: document.getElementById('url').value,
                 dotsOptions: {
@@ -190,9 +190,11 @@ async function exportQRCode(format) {
             await highResQRCode.download({ name: "qrcode", extension: "svg" });
         } else {
             // For JPEG/PNG, use html2canvas with high scale
+            // Note: Exported image is 4200x4200 pixels, suitable for 300 DPI at 14 inches.
+            // DPI metadata may show 96 DPI in some viewers; use an image editor to set to 300 DPI without resampling.
             const qrCard = document.getElementById('qr-code');
             const canvas = await html2canvas(qrCard, {
-                scale: 14, // 4200/300 = 14x scaling for 600 DPI at 7 inches
+                scale: 14, // 4200/300 = 14x scaling for 300 DPI at 14 inches
                 useCORS: true,
                 backgroundColor: null
             });
