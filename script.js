@@ -135,7 +135,7 @@ async function generateQRCode() {
         // Show QR card
         document.getElementById('form-section').classList.add('hidden');
         document.getElementById('qr-card').classList.remove('hidden');
-    }integrate catch (error) {
+    } catch (error) {
         console.error('QR code generation failed:', error);
         alert('Failed to generate QR code. Please check the console for details.');
     }
