@@ -9,7 +9,7 @@
   <style>
     #qr-card { display: none; }
     #form-card { display: block; }
-    #qr-canvas { width: 100%; max-width: 900px; height: auto; }
+    #qr-canvas { width: 100%; max-width: 300px; height: auto; }
     .color-picker-label { display: inline-block; width: 120px; }
   </style>
 </head>
@@ -22,7 +22,7 @@
       <form id="qr-form" class="space-y-4">
         <div>
           <label class="block text-sm font-medium text-gray-700">Website URL</label>
-          <input type="url" id="url" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" placeholder="https://example.com" required>
+          <input type="text" id="url" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" placeholder="google.com" required>
         </div>
         <div class="flex space-x-4">
           <div>
@@ -38,7 +38,7 @@
         </div>
         <div class="flex space-x-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700">Pattern Type</label>
+            <label class="block text-sm font-medium text-gray-700">Pattern</label>
             <select id="pattern-type" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
               <option value="square">Square</option>
               <option value="dots">Dots</option>
@@ -46,7 +46,7 @@
             </select>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700">Corner Frame Type</label>
+            <label class="block text-sm font-medium text-gray-700">Frame</label>
             <select id="corner-frame-type" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
               <option value="square">Square</option>
               <option value="rounded">Rounded</option>
@@ -54,7 +54,7 @@
             </select>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700">Corner Dot Type</label>
+            <label class="block text-sm font-medium text-gray-700">Dot</label>
             <select id="corner-dot-type" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
               <option value="square">Square</option>
               <option value="dot">Dot</option>
@@ -63,7 +63,7 @@
           </div>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">Logo (Optional, max 2MB)</label>
+          <label class="block text-sm font-medium text-gray-700">Logo (Optional)</label>
           <input type="file" id="logo" accept="image/png,image/jpeg,image/svg+xml" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
         </div>
         <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700">Generate QR Code</button>
@@ -111,7 +111,7 @@
     form.addEventListener('submit', (e) => {
       e.preventDefault();
       
-      const url = document.getElementById('url').value;
+      let url = document.getElementById('url').value;
       const bgColor = bgColorText.value;
       const patternColor = patternColorText.value;
       const patternType = document.getElementById('pattern-type').value;
@@ -119,16 +119,13 @@
       const cornerDotType = document.getElementById('corner-dot-type').value;
       const logo = document.getElementById('logo').files[0];
 
-      // Validate URL
+      // Validate and normalize URL
       if (!url) {
         alert('Please enter a valid URL');
         return;
       }
-
-      // Validate logo size
-      if (logo && logo.size > 2 * 1024 * 1024) {
-        alert('Logo file size must be less than 2MB');
-        return;
+      if (!url.match(/^https?:\/\//)) {
+        url = 'https://' + url;
       }
 
       // Clear previous QR code
