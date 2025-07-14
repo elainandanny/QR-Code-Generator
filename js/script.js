@@ -100,7 +100,7 @@ async function generateQRCode() {
     try {
         // Configure QR code
         qrCodeInstance = new QRCodeStyling({
-            width: 300, // Suitable for display
+            width: 300,
             height: 300,
             data: url,
             dotsOptions: {
@@ -166,7 +166,7 @@ async function exportQRCode(format) {
         } else {
             const qrCard = document.getElementById('qr-code');
             const canvas = await html2canvas(qrCard, {
-                scale: 4, // High resolution for exports
+                scale: 4,
                 useCORS: true,
                 backgroundColor: null
             });
