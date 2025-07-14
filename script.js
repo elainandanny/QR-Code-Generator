@@ -1,216 +1,184 @@
-// Ensure QRCodeStyling is loaded
-if (!window.QRCodeStyling) {
-    console.error('QRCodeStyling library not loaded. Please ensure qr-code-styling.js is included.');
-    alert('QR code library failed to load. Please check the console and ensure qr-code-styling.js is included.');
-    throw new Error('QRCodeStyling not loaded');
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Code Generator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script type="text/javascript" src="https://unpkg.com/qr-code-styling@1.6.0-rc.1/lib/qr-code-styling.js"></script>
+  <style>
+    #qr-card { display: none; }
+    #qr-canvas { width: 100%; max-width: 400px; height: auto; }
+    .color-picker-label { display: inline-block; width: 120px; }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+  <div class="container mx-auto p-4 max-w-4xl">
+    <h1 class="text-3xl font-bold text-center mb-6">QR Code Generator</h1>
+    
+    <!-- Form Section -->
+    <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+      <form id="qr-form" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Website URL</label>
+          <input type="url" id="url" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" placeholder="https://example.com" required>
+        </div>
+        <div class="flex space-x-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 color-picker-label">Background Color</label>
+            <input type="color" id="bg-color" value="#ffffff" class="mt-1 p-1 h-10 w-10 border border-gray-300 rounded">
+            <input type="text" id="bg-color-text" value="#ffffff" class="mt-1 ml-2 p-1 w-24 border border-gray-300 rounded-md" placeholder="#ffffff">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 color-picker-label">Pattern Color</label>
+            <input type="color" id="pattern-color" value="#000000" class="mt-1 p-1 h-10 w-10 border border-gray-300 rounded">
+            <input type="text" id="pattern-color-text" value="#000000" class="mt-1 ml-2 p-1 w-24 border border-gray-300 rounded-md" placeholder="#000000">
+          </div>
+        </div>
+        <div class="flex space-x-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Pattern Type</label>
+            <select id="pattern-type" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+              <option value="square">Square</option>
+              <option value="dots">Dots</option>
+              <option value="rounded">Rounded Squares</option>
+              <option value="circle">Circle</option>
+              <option value="diamond">Diamond</option>
+              <option value="star">Star</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Corner Frame Type</label>
+            <select id="corner-frame-type" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+              <option value="square">Square</option>
+              <option value="rounded">Rounded</option>
+              <option value="circle">Circle</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Corner Dot Type</label>
+            <select id="corner-dot-type" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+              <option value="square">Square</option>
+              <option value="dot">Dot</option>
+              <option value="rounded">Rounded</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Logo (Optional, max 2MB)</label>
+          <input type="file" id="logo" accept="image/png,image/jpeg,image/svg+xml" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Text (Optional)</label>
+          <input type="text" id="label-text" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" placeholder="Scan me!">
+        </div>
+        <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700">Generate QR Code</button>
+      </form>
+    </div>
+    
+    <!-- QR Code Card -->
+    <div id="qr-card" class="bg-white p-6 rounded-lg shadow-md text-center">
+      <h2 class="text-xl font-semibold mb-4">Your QR Code</h2>
+      <div id="qr-canvas" class="mx-auto mb-4"></div>
+      <div class="flex justify-center space-x-4">
+        <button id="download-jpg" class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">Download JPG</button>
+        <button id="download-png" class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">Download PNG</button>
+        <button id="download-svg" class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">Download SVG</button>
+      </div>
+    </div>
+  </div>
 
-// Ensure html2canvas is loaded
-if (!window.html2canvas) {
-    console.error('html2canvas library not loaded. Please ensure html2canvas.js is included.');
-    alert('html2canvas library failed to load. Please check the console.');
-    throw new Error('html2canvas not loaded');
-}
+  <script>
+    const form = document.getElementById('qr-form');
+    const qrCard = document.getElementById('qr-card');
+    const qrCanvas = document.getElementById('qr-canvas');
+    const bgColorInput = document.getElementById('bg-color');
+    const bgColorText = document.getElementById('bg-color-text');
+    const patternColorInput = document.getElementById('pattern-color');
+    const patternColorText = document.getElementById('pattern-color-text');
 
-// Store QR code instance for reuse
-let qrCodeInstance = null;
+    // Sync color picker and text input
+    bgColorInput.addEventListener('input', () => bgColorText.value = bgColorInput.value);
+    bgColorText.addEventListener('input', () => bgColorInput.value = bgColorText.value);
+    patternColorInput.addEventListener('input', () => patternColorText.value = patternColorInput.value);
+    patternColorText.addEventListener('input', () => patternColorInput.value = patternColorText.value);
 
-// Form submission
-document.getElementById('qr-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    generateQRCode();
-});
+    let qrCode = null;
 
-// Edit button
-document.getElementById('edit-btn').addEventListener('click', function() {
-    document.getElementById('qr-card').classList.add('hidden');
-    document.getElementById('form-section').classList.remove('hidden');
-});
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      const url = document.getElementById('url').value;
+      const bgColor = bgColorText.value;
+      const patternColor = patternColorText.value;
+      const patternType = document.getElementById('pattern-type').value;
+      const cornerFrameType = document.getElementById('corner-frame-type').value;
+      const cornerDotType = document.getElementById('corner-dot-type').value;
+      const logo = document.getElementById('logo').files[0];
+      const labelText = document.getElementById('label-text').value;
 
-// Color picker sync
-document.getElementById('bg-color').addEventListener('input', function() {
-    document.getElementById('bg-color-hex').value = this.value;
-    checkContrast();
-});
-
-document.getElementById('pattern-color').addEventListener('input', function() {
-    document.getElementById('pattern-color-hex').value = this.value;
-    checkContrast();
-});
-
-document.getElementById('bg-color-hex').addEventListener('input', function() {
-    const value = this.value.match(/^#[0-9A-Fa-f]{6}$/) ? this.value : '#ffffff';
-    document.getElementById('bg-color').value = value;
-    this.value = value;
-    checkContrast();
-});
-
-document.getElementById('pattern-color-hex').addEventListener('input', function() {
-    const value = this.value.match(/^#[0-9A-Fa-f]{6}$/) ? this.value : '#000000';
-    document.getElementById('pattern-color').value = value;
-    this.value = value;
-    checkContrast();
-});
-
-// Contrast checker
-function checkContrast() {
-    const bgColor = document.getElementById('bg-color').value;
-    const patternColor = document.getElementById('pattern-color').value;
-    const contrastRatio = getContrastRatio(bgColor, patternColor);
-    const warning = document.getElementById('contrast-warning');
-    if (contrastRatio < 4.5) {
-        warning.classList.remove('hidden');
-    } else {
-        warning.classList.add('hidden');
-    }
-}
-
-function getContrastRatio(color1, color2) {
-    const l1 = getLuminance(color1);
-    const l2 = getLuminance(color2);
-    const brighter = Math.max(l1, l2);
-    const darker = Math.min(l1, l2);
-    return (brighter + 0.05) / (darker + 0.05);
-}
-
-function getLuminance(hex) {
-    hex = hex.replace('#', '');
-    const r = parseInt(hex.substr(0, 2), 16) / 255;
-    const g = parseInt(hex.substr(2, 2), 16) / 255;
-    const b = parseInt(hex.substr(4, 2), 16) / 255;
-    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-}
-
-// QR code generation
-async function generateQRCode() {
-    const url = document.getElementById('url').value;
-    const bgColor = document.getElementById('bg-color').value;
-    const patternColor = document.getElementById('pattern-color').value;
-    const patternType = document.getElementById('pattern-type').value;
-    const cornerFrame = document.getElementById('corner-frame').value;
-    const cornerDot = document.getElementById('corner-dot').value;
-    const logo = document.getElementById('logo').files[0];
-    const bottomText = document.getElementById('bottom-text').value;
-
-    if (!url) {
+      // Validate URL
+      if (!url) {
         alert('Please enter a valid URL');
         return;
-    }
+      }
 
-    try {
-        // Configure QR code for display (larger size for better rendering)
-        qrCodeInstance = new QRCodeStyling({
-            width: 600, // Increased display size for sharper rendering
-            height: 600,
-            data: url,
-            dotsOptions: {
-                color: patternColor,
-                type: patternType
-            },
-            backgroundOptions: {
-                color: bgColor
-            },
-            cornersSquareOptions: {
-                type: cornerFrame
-            },
-            cornersDotOptions: {
-                type: cornerDot
-            },
-            image: logo ? URL.createObjectURL(logo) : undefined,
-            imageOptions: {
-                crossOrigin: "anonymous",
-                margin: 20, // Scaled for larger display: 10 * (600/300)
-                imageSize: 0.4
-            }
-        });
-
-        // Clear previous QR code
-        document.getElementById('qr-code').innerHTML = '';
-        // Append QR code
-        await qrCodeInstance.append(document.getElementById('qr-code'));
-
-        // Add bottom text
-        document.getElementById('qr-text').textContent = bottomText;
-
-        // Show QR card
-        document.getElementById('form-section').classList.add('hidden');
-        document.getElementById('qr-card').classList.remove('hidden');
-    } catch (error) {
-        console.error('QR code generation failed:', error);
-        alert('Failed to generate QR code. Please check the console for details.');
-    }
-}
-
-// Export buttons
-document.getElementById('export-jpeg').addEventListener('click', function() {
-    exportQRCode('jpeg');
-});
-
-document.getElementById('export-png').addEventListener('click', function() {
-    exportQRCode('png');
-});
-
-document.getElementById('export-svg').addEventListener('click', function() {
-    exportQRCode('svg');
-});
-
-async function exportQRCode(format) {
-    if (!qrCodeInstance) {
-        alert('No QR code generated. Please generate a QR code first.');
+      // Validate logo size
+      if (logo && logo.size > 2 * 1024 * 1024) {
+        alert('Logo file size must be less than 2MB');
         return;
-    }
+      }
 
-    try {
-        if (format === 'svg') {
-            // Reconfigure QR code for high-resolution export (300 DPI, 4200x4200 pixels, 14 inches)
-            const highResQRCode = new QRCodeStyling({
-                width: 4200, // 14 inches * 300 DPI
-                height: 4200,
-                data: document.getElementById('url').value,
-                dotsOptions: {
-                    color: document.getElementById('pattern-color').value,
-                    type: document.getElementById('pattern-type').value
-                },
-                backgroundOptions: {
-                    color: document.getElementById('bg-color').value
-                },
-                cornersSquareOptions: {
-                    type: document.getElementById('corner-frame').value
-                },
-                cornersDotOptions: {
-                    type: document.getElementById('corner-dot').value
-                },
-                image: document.getElementById('logo').files[0] ? URL.createObjectURL(document.getElementById('logo').files[0]) : undefined,
-                imageOptions: {
-                    crossOrigin: "anonymous",
-                    margin: 140, // Scaled proportionally: 20 * (4200/600)
-                    imageSize: 0.4
-                }
-            });
-            await highResQRCode.download({ name: "qrcode", extension: "svg" });
-        } else {
-            // For JPEG/PNG, use html2canvas with high scale
-            // Note: Exported image is 4200x4200 pixels, suitable for 300 DPI at 14 inches.
-            // DPI metadata may show 96 DPI in some viewers; use an image editor to set to 300 DPI without resampling.
-            const qrCard = document.getElementById('qr-code');
-            const canvas = await html2canvas(qrCard, {
-                scale: 7, // 4200/600 = 7x scaling for 300 DPI at 14 inches
-                useCORS: true,
-                backgroundColor: null,
-                width: 600, // Ensure square capture
-                height: 600
-            });
-            // Verify canvas dimensions
-            if (canvas.width !== 4200 || canvas.height !== 4200) {
-                console.warn(`Canvas dimensions are ${canvas.width}x${canvas.height}, expected 4200x4200`);
-            }
-            const link = document.createElement('a');
-            link.download = `qrcode.${format}`;
-            link.href = canvas.toDataURL(`image/${format}`, 1.0);
-            link.click();
+      // Clear previous QR code
+      qrCanvas.innerHTML = '';
+
+      // Configure QR code
+      const options = {
+        width: 4000,
+        height: 4000,
+        type: 'canvas',
+        data: url,
+        dotsOptions: {
+          color: patternColor,
+          type: patternType
+        },
+        backgroundOptions: {
+          color: bgColor
+        },
+        cornersSquareOptions: {
+          type: cornerFrameType
+        },
+        cornersDotOptions: {
+          type: cornerDotType
+        },
+        imageOptions: {
+          crossOrigin: 'anonymous',
+          margin: 20
         }
-    } catch (error) {
-        console.error(`Export failed (${format}):`, error);
-        alert(`Export failed for ${format.toUpperCase()}. Please check the console.`);
-    }
-}
+      };
+
+      if (logo) {
+        options.image = URL.createObjectURL(logo);
+      }
+
+      if (labelText) {
+        options.qrOptions = {
+          errorCorrectionLevel: 'H'
+        };
+      }
+
+      // Generate QR code
+      qrCode = new QRCodeStyling(options);
+      qrCode.append(qrCanvas);
+
+      // Show QR code card
+      qrCard.style.display = 'block';
+
+      // Handle downloads
+      document.getElementById('download-jpg').onclick = () => qrCode.download({ name: 'qrcode', extension: 'jpg' });
+      document.getElementById('download-png').onclick = () => qrCode.download({ name: 'qrcode', extension: 'png' });
+      document.getElementById('download-svg').onclick = () => qrCode.download({ name: 'qrcode', extension: 'svg' });
+    });
+  </script>
+</body>
+</html>
