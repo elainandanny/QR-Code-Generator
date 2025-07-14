@@ -4,79 +4,87 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QR Code Generator</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="js/qrcode-styling.js"></script>
-    <link rel="stylesheet" href="css/styles.css">
+    <!-- Prevent favicon 404 error -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='none'/></svg>">
+    <!-- Tailwind CSS (specific version to avoid production warning) -->
+    <script src="https://cdn.tailwindcss.com/3.4.14"></script>
+    <!-- Local styles -->
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
     <div class="container mx-auto p-4">
         <!-- Form Section -->
-        <div id="form-section" class="bg-white p-6 rounded-lg shadow-lg max-w-md mx-auto">
+        <section id="form-section" class="bg-white p-6 rounded-lg shadow-lg max-w-md mx-auto">
             <h1 class="text-2xl font-bold mb-4 text-center">QR Code Generator</h1>
-            <form id="qr-form">
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Website Link</label>
-                    <input type="url" id="url" class="mt-1 p-2 w-full border rounded" required>
+            <form id="qr-form" class="space-y-4">
+                <div>
+                    <label for="url" class="block text-sm font-medium text-gray-700">Website Link</label>
+                    <input type="url" id="url" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required>
                 </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Background Color</label>
-                    <input type="color" id="bg-color" class="mt-1 rounded-full">
-                    <input type="text" id="bg-color-hex" class="mt-1 p-2 w-full border rounded" value="#ffffff">
+                <div class="flex space-x-4">
+                    <div>
+                        <label for="bg-color" class="block text-sm font-medium text-gray-700">Background Color</label>
+                        <input type="color" id="bg-color" value="#ffffff" class="mt-1">
+                        <input type="text" id="bg-color-hex" value="#ffffff" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                    </div>
+                    <div>
+                        <label for="pattern-color" class="block text-sm font-medium text-gray-700">Pattern Color</label>
+                        <input type="color" id="pattern-color" value="#000000" class="mt-1">
+                        <input type="text" id="pattern-color-hex" value="#000000" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                    </div>
                 </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Pattern Color</label>
-                    <input type="color" id="pattern-color" class="mt-1 rounded-full">
-                    <input type="text" id="pattern-color-hex" class="mt-1 p-2 w-full border rounded" value="#000000">
-                </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Pattern Type</label>
-                    <select id="pattern-type" class="mt-1 p-2 w-full border rounded">
+                <div>
+                    <label for="pattern-type" class="block text-sm font-medium text-gray-700">Pattern Type</label>
+                    <select id="pattern-type" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
                         <option value="square">Square Boxes</option>
                         <option value="dots">Dots</option>
                         <option value="rounded">Rounded Boxes</option>
                     </select>
                 </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Corner Frame Type</label>
-                    <select id="corner-frame" class="mt-1 p-2 w-full border rounded">
+                <div>
+                    <label for="corner-frame" class="block text-sm font-medium text-gray-700">Corner Frame Type</label>
+                    <select id="corner-frame" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
                         <option value="square">Square</option>
                         <option value="extra-rounded">Circle</option>
                     </select>
                 </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Corner Dot Type</label>
-                    <select id="corner-dot" class="mt-1 p-2 w-full border rounded">
+                <div>
+                    <label for="corner-dot" class="block text-sm font-medium text-gray-700">Corner Dot Type</label>
+                    <select id="corner-dot" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
                         <option value="square">Square</option>
                         <option value="dot">Dot</option>
                     </select>
                 </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Logo (Optional)</label>
-                    <input type="file" id="logo" accept="image/*" class="mt-1">
+                <div>
+                    <label for="logo" class="block text-sm font-medium text-gray-700">Logo (Optional)</label>
+                    <input type="file" id="logo" accept="image/*" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
                 </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Bottom Text (Optional)</label>
-                    <input type="text" id="bottom-text" class="mt-1 p-2 w-full border rounded">
+                <div>
+                    <label for="bottom-text" class="block text-sm font-medium text-gray-700">Bottom Text (Optional)</label>
+                    <input type="text" id="bottom-text" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
                 </div>
-                <div id="contrast-warning" class="text-red-500 hidden mb-4">Insufficient contrast between colors!</div>
-                <button type="submit" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">Generate QR Code</button>
+                <p id="contrast-warning" class="text-red-500 hidden">Insufficient contrast between colors!</p>
+                <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700">Generate QR Code</button>
             </form>
-        </div>
+        </section>
 
-        <!-- QR Code Card Section -->
-        <div id="qr-card" class="hidden bg-white p-6 rounded-lg shadow-lg max-w-md mx-auto mt-4">
-            <h2 class="text-xl font-bold mb-4 text-center">Your QR Code</h2>
-            <div id="qr-code" class="flex justify-center"></div>
-            <div id="qr-text" class="text-center mt-2"></div>
-            <div class="mt-4 flex justify-center space-x-2">
-                <button id="edit-btn" class="bg-gray-500 text-white p-2 rounded hover:bg-gray-600">Edit</button>
-                <button id="export-jpeg" class="bg-green-500 text-white p-2 rounded hover:bg-green-600">Export JPEG</button>
-                <button id="export-png" class="bg-green-500 text-white p-2 rounded hover:bg-green-600">Export PNG</button>
-                <button id="export-svg" class="bg-green-500 text-white p-2 rounded hover:bg-green-600">Export SVG</button>
+        <!-- QR Code Section -->
+        <section id="qr-card" class="hidden bg-white p-6 rounded-lg shadow-lg max-w-md mx-auto text-center">
+            <h2 class="text-xl font-bold mb-4">Your QR Code</h2>
+            <div id="qr-code" class="mx-auto"></div>
+            <p id="qr-text" class="mt-4 text-gray-700"></p>
+            <div class="mt-4 space-x-2">
+                <button id="edit-btn" class="bg-gray-500 text-white p-2 rounded-md hover:bg-gray-600">Edit</button>
+                <button id="export-jpeg" class="bg-green-600 text-white p-2 rounded-md hover:bg-green-700">Export JPEG</button>
+                <button id="export-png" class="bg-green-600 text-white p-2 rounded-md hover:bg-green-700">Export PNG</button>
+                <button id="export-svg" class="bg-green-600 text-white p-29 rounded-md hover:bg-green-700">Export SVG</button>
             </div>
-        </div>
+        </section>
     </div>
-    <script src="js/script.js"></script>
+
+    <!-- Load dependencies -->
+    <script src="https://unpkg.com/qr-code-styling@1.6.0-rc.1/lib/qr-code-styling.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
