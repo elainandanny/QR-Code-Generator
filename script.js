@@ -98,9 +98,9 @@ async function generateQRCode() {
     }
 
     try {
-        // Configure QR code
+        // Configure QR code for display (smaller size for performance)
         qrCodeInstance = new QRCodeStyling({
-            width: 300,
+            width: 300, // Display size
             height: 300,
             data: url,
             dotsOptions: {
@@ -162,11 +162,37 @@ async function exportQRCode(format) {
 
     try {
         if (format === 'svg') {
-            await qrCodeInstance.download({ name: "qrcode", extension: "svg" });
+            // Reconfigure QR code for high-resolution export (600 DPI, 24 inches)
+            const highResQRCode = new QRCodeStyling({
+                width: 14400, // 24 inches * 600 DPI
+                height: 14400,
+                data: document.getElementById('url').value,
+                dotsOptions: {
+                    color: document.getElementById('pattern-color').value,
+                    type: document.getElementById('pattern-type').value
+                },
+                backgroundOptions: {
+                    color: document.getElementById('bg-color').value
+                },
+                cornersSquareOptions: {
+                    type: document.getElementById('corner-frame').value
+                },
+                cornersDotOptions: {
+                    type: document.getElementById('corner-dot').value
+                },
+                image: document.getElementById('logo').files[0] ? URL.createObjectURL(document.getElementById('logo').files[0]) : undefined,
+                imageOptions: {
+                    crossOrigin: "anonymous",
+                    margin: 240, // Scaled proportionally: 10 * (14400/300)
+                    imageSize: 0.4
+                }
+            });
+            await highResQRCode.download({ name: "qrcode", extension: "svg" });
         } else {
+            // For JPEG/PNG, use html2canvas with high scale
             const qrCard = document.getElementById('qr-code');
             const canvas = await html2canvas(qrCard, {
-                scale: 4,
+                scale: 48, // 14400/300 = 48x scaling for 600 DPI at 24 inches
                 useCORS: true,
                 backgroundColor: null
             });
