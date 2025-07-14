@@ -8,7 +8,8 @@
   <script type="text/javascript" src="https://unpkg.com/qr-code-styling@1.6.0-rc.1/lib/qr-code-styling.js"></script>
   <style>
     #qr-card { display: none; }
-    #qr-canvas { width: 100%; max-width: 400px; height: auto; }
+    #form-card { display: block; }
+    #qr-canvas { width: 100%; max-width: 300px; height: auto; }
     .color-picker-label { display: inline-block; width: 120px; }
   </style>
 </head>
@@ -17,7 +18,7 @@
     <h1 class="text-3xl font-bold text-center mb-6">QR Code Generator</h1>
     
     <!-- Form Section -->
-    <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+    <div id="form-card" class="bg-white p-6 rounded-lg shadow-md mb-6">
       <form id="qr-form" class="space-y-4">
         <div>
           <label class="block text-sm font-medium text-gray-700">Website URL</label>
@@ -42,9 +43,6 @@
               <option value="square">Square</option>
               <option value="dots">Dots</option>
               <option value="rounded">Rounded Squares</option>
-              <option value="circle">Circle</option>
-              <option value="diamond">Diamond</option>
-              <option value="star">Star</option>
             </select>
           </div>
           <div>
@@ -84,24 +82,33 @@
         <button id="download-jpg" class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">Download JPG</button>
         <button id="download-png" class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">Download PNG</button>
         <button id="download-svg" class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">Download SVG</button>
+        <button id="edit-qr" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Edit</button>
       </div>
     </div>
   </div>
 
   <script>
     const form = document.getElementById('qr-form');
+    const formCard = document.getElementById('form-card');
     const qrCard = document.getElementById('qr-card');
     const qrCanvas = document.getElementById('qr-canvas');
     const bgColorInput = document.getElementById('bg-color');
     const bgColorText = document.getElementById('bg-color-text');
     const patternColorInput = document.getElementById('pattern-color');
     const patternColorText = document.getElementById('pattern-color-text');
+    const editButton = document.getElementById('edit-qr');
 
     // Sync color picker and text input
     bgColorInput.addEventListener('input', () => bgColorText.value = bgColorInput.value);
     bgColorText.addEventListener('input', () => bgColorInput.value = bgColorText.value);
     patternColorInput.addEventListener('input', () => patternColorText.value = patternColorInput.value);
     patternColorText.addEventListener('input', () => patternColorInput.value = patternColorText.value);
+
+    // Edit button to return to form
+    editButton.addEventListener('click', () => {
+      qrCard.style.display = 'none';
+      formCard.style.display = 'block';
+    });
 
     let qrCode = null;
 
@@ -124,7 +131,8 @@
       }
 
       // Validate logo size
-      if (logo && logo.size > 2 * 1024 * 1024) {
+      if (logo && 
+      logo.size > 2 * 1024 * 1024) {
         alert('Logo file size must be less than 2MB');
         return;
       }
@@ -171,7 +179,8 @@
       qrCode = new QRCodeStyling(options);
       qrCode.append(qrCanvas);
 
-      // Show QR code card
+      // Show QR code card and hide form card
+      formCard.style.display = 'none';
       qrCard.style.display = 'block';
 
       // Handle downloads
