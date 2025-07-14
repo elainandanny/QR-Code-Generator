@@ -9,8 +9,9 @@
   <style>
     #qr-card { display: none; }
     #form-card { display: block; }
-    #qr-canvas { width: 100%; max-width: 300px; height: auto; }
+    #qr-canvas { width: 100%; max-width: 200px; height: auto; }
     .color-picker-label { display: inline-block; width: 120px; }
+    #qr-label { font-size: 14px; color: #333; margin-top: 10px; }
   </style>
 </head>
 <body class="bg-gray-100 min-h-screen flex items-center justify-center">
@@ -78,6 +79,7 @@
     <div id="qr-card" class="bg-white p-6 rounded-lg shadow-md text-center">
       <h2 class="text-xl font-semibold mb-4">Your QR Code</h2>
       <div id="qr-canvas" class="mx-auto mb-4"></div>
+      <div id="qr-label" class="mx-auto"></div>
       <div class="flex justify-center space-x-4">
         <button id="download-jpg" class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">Download JPG</button>
         <button id="download-png" class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">Download PNG</button>
@@ -92,6 +94,7 @@
     const formCard = document.getElementById('form-card');
     const qrCard = document.getElementById('qr-card');
     const qrCanvas = document.getElementById('qr-canvas');
+    const qrLabel = document.getElementById('qr-label');
     const bgColorInput = document.getElementById('bg-color');
     const bgColorText = document.getElementById('bg-color-text');
     const patternColorInput = document.getElementById('pattern-color');
@@ -131,14 +134,14 @@
       }
 
       // Validate logo size
-      if (logo && 
-      logo.size > 2 * 1024 * 1024) {
+      if (logo && logo.size > 2 * 1024 * 1024) {
         alert('Logo file size must be less than 2MB');
         return;
       }
 
-      // Clear previous QR code
+      // Clear previous QR code and label
       qrCanvas.innerHTML = '';
+      qrLabel.innerHTML = '';
 
       // Configure QR code
       const options = {
@@ -161,7 +164,9 @@
         },
         imageOptions: {
           crossOrigin: 'anonymous',
-          margin: 20
+          margin: 20,
+          imageSize: 0.4,
+          hideBackgroundDots: false
         }
       };
 
@@ -173,6 +178,7 @@
         options.qrOptions = {
           errorCorrectionLevel: 'H'
         };
+        qrLabel.textContent = labelText;
       }
 
       // Generate QR code
